@@ -146,12 +146,16 @@ class UjianController extends Controller
 
         $prompt = "Soal Esai: {$soal->pertanyaan}\n"
                 ."Jawaban Siswa: {$request->jawaban_dipilih}\n"
-                ."Berdasarkan soal dan jawaban siswa di atas, berikan **nilai** dari **0 hingga {$skorPerSoal}**. Penilaian harus mempertimbangkan:\n"
-                ."- **Kesesuaian** jawaban dengan pertanyaan.\n"
-                ."- **Kebenaran** informasi atau konsep yang diberikan.\n"
-                ."- **Kelengkapan** argumen atau penjelasan (jika relevan).\n"
-                ."- **Kejelasan** dan **koherensi** penulisan..\n.\n"
-                ."Jawab hanya dengan angka. Contoh: 4.5";
+                ."Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
+                ."Penilaian WAJIB mengikuti pedoman berikut:\n"
+                ."- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar menurut soal, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                ."- Jika jawaban salah total, tidak relevan, atau tidak menjawab, beri nilai 0.\n"
+                ."- Jika jawaban hanya sebagian benar, kurang lengkap, atau mengandung kesalahan kecil, nilai harus dikurangi secara proporsional.\n"
+                ."- Fokus hanya pada kebenaran dan kelengkapan isi. Jangan terpengaruh gaya bahasa, panjang jawaban, atau opini pribadi.\n"
+                ."- Jangan memberikan nilai acak, kreatif, atau subjektif. Nilai harus berdasarkan ketepatan dan kesesuaian isi jawaban.\n\n"
+                ."Catatan:\n"
+                ."Soal ini bersifat esai TERBATAS (tertutup) dengan jawaban yang benar sudah diketahui dan terdefinisi. Oleh karena itu, model harus menilai secara presisi, bukan interpretatif.\n\n"
+                ."Jawab hanya dengan ANGKA BULAT. Contoh: 100 atau 70 atau 0. Jangan beri penjelasan tambahan.";
 
         $response = Http::timeout(120)->post('http://31.97.111.43:11434/api/generate', [
             'model' => 'llama3',
