@@ -153,7 +153,7 @@ class UjianController extends Controller
                 ."- **Kejelasan** dan **koherensi** penulisan..\n.\n"
                 ."Jawab hanya dengan angka. Contoh: 4.5";
 
-        $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
+        $response = Http::timeout(120)->post('http://31.97.111.43:11434/api/generate', [
             'model' => 'llama3',
             'prompt' => $prompt,
             'stream' => false,
