@@ -159,8 +159,6 @@ class UjianController extends Controller
             'stream' => false,
         ]);
 
-        dd($response->json());
-
         $output = $response->json('response');
         preg_match('/\d+(\.\d+)?/', $output, $matches);
         $nilai = isset($matches[0]) ? floatval($matches[0]) : 0;
