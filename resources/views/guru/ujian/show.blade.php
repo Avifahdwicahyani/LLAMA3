@@ -50,7 +50,7 @@
                                     @foreach ($ujian->soals as $soal)
                                         <tr>
                                             <td>{{ $soal->id }}</td>
-                                            <td>{{ $soal->pertanyaan }}</td>
+                                            <td>{!! $soal->pertanyaan !!}</td>
                                             <td>{{ $soal->jawaban_benar }}</td>
                                              <td>
                                                 <a href="{{ route('guru.soal.edit', $soal->id) }}" class="btn btn-sm btn-warning">Edit</a>
@@ -145,6 +145,7 @@
                                         <th>Status</th>
                                         <th>Nilai 1</th>
                                         <th>Nilai 2</th>
+                                        <th>Detail</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -162,6 +163,7 @@
                                             </td>
                                             <td>{{ $siswas->nilai_1 ?? 0 }}</td>
                                             <td>{{ $siswas->nilai_2 ?? 0 }}</td>
+                                             <td> <a href="{{ route('guru.ujian.show.nilaisiswa', [$siswas->siswa?->id, $ujian->id]) }}" class="btn btn-sm btn-info">Detail</a></td>
                                         </tr>
                                     @endforeach
                                 </tbody>

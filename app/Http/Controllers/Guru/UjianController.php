@@ -136,4 +136,22 @@ class UjianController extends Controller
             ->setPaper('A4', 'portrait');
         return $pdf->download('hasil-ujian-'.$ujian->id.'.pdf');
     }
+
+    public function showNilaisiswa($id, $ujianid)
+    {
+       $ujianSiswa = UjianSiswa::with([
+            'siswa.user',
+            'jawabanSiswa' => function ($q) use ($ujianid) {
+                $q->whereHas('soal', function ($query) use ($ujianid) {
+                    $query->where('ujian_id', $ujianid);
+                });
+            },
+            'jawabanSiswa.soal'
+        ])
+        ->where('siswa_id', $id)
+        ->where('ujian_id', $ujianid)
+        ->firstOrFail();
+        
+        return view('guru.ujian.nilaisiswa', compact('ujianSiswa'));
+    }
 }

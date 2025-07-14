@@ -22,4 +22,8 @@ class UjianSiswa extends Model
         return $this->hasOne(Siswa::class, 'id', 'siswa_id');
     }
 
+    public function jawabanSiswa()
+    {
+        return $this->hasMany(JawabanSiswa::class, 'siswa_id', 'siswa_id');
+    }
 }
