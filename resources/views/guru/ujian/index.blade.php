@@ -32,7 +32,7 @@
                     <td>
                         <a href="{{ route('guru.ujian.show', $ujian->id) }}" class="btn btn-sm btn-info">Detail</a>
                         <a href="{{ route('guru.ujian.edit', $ujian->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                        <a href="{{ route('guru.ujian.show.koreksi', $ujian->id) }}" class="btn btn-sm btn-success">Koreksi Ujian</a>
+                        <a href="#" class="btn btn-sm btn-success" id="koreksiUjian" data-id="{{ $ujian->id }}">Koreksi Ujian</a>
                         <form action="{{ route('guru.ujian.destroy', $ujian->id) }}" method="POST" class="d-inline form-delete">
                             @csrf
                             @method('DELETE')
@@ -48,4 +48,42 @@
     </div>
 </div>
    </div>
+
+   <script>
+document.getElementById('koreksiUjian').addEventListener('click', function(event) {
+    event.preventDefault(); // Mencegah default action
+    const ujianId = this.getAttribute('data-id');
+
+    Swal.fire({
+        title: 'Loading...',
+        text: 'Sedang memproses, harap tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    const url = "{{ route('guru.ujian.show.koreksi', ':id') }}".replace(':id', ujianId);
+
+    fetch(url)
+        .then(response => {
+            if (response.ok) {
+                location.reload();
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Terjadi kesalahan!'
+                });
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Terjadi kesalahan!'
+            });
+        });
+});
+</script>
 @endsection

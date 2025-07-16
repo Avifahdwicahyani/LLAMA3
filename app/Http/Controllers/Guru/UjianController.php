@@ -164,6 +164,21 @@ class UjianController extends Controller
         })->pluck('siswa_id')->unique();
 
         foreach ($siswaIds as $siswaId) {
+            $check = UjianSiswa::where(
+                [
+                    'ujian_id' => $ujianId,
+                    'siswa_id' => $siswaId
+                ]
+            )->first();
+
+            if (!$check) {
+                continue;
+            }
+
+            if ($check->status != 'selesai' && $check->nilai_1 !== null && $check->nilai_2 !== null) {
+                continue;
+            }
+
             $jawabanSiswa = JawabanSiswa::where('siswa_id', $siswaId)
                 ->whereHas('soal', function ($query) use ($ujianId) {
                     $query->where('ujian_id', $ujianId);
