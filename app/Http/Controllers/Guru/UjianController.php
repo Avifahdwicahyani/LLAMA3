@@ -258,10 +258,6 @@ class UjianController extends Controller
             'siswa_id' => $siswaId
         ])->first();
 
-        if (!$ujianSiswa || ($ujianSiswa->status != 'selesai' && $ujianSiswa->nilai_1 !== null && $ujianSiswa->nilai_2 !== null)) {
-            return response()->json(['success' => true, 'message' => 'Tidak perlu dikoreksi']);
-        }
-
         $jawabanSiswa = JawabanSiswa::with('soal')
             ->where('siswa_id', $siswaId)
             ->whereHas('soal', function ($q) use ($ujianId) {
@@ -297,7 +293,7 @@ class UjianController extends Controller
                     . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
                     . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
                     . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
-                    
+
             try {
                 $response = Http::timeout(30)->post('http://localhost:11434/api/generate', [
                     'model' => 'llama3',
