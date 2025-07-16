@@ -324,8 +324,6 @@ class UjianController extends Controller
                 $nilaiLlama3 = 0;
             }
 
-            dd($nilaiLlama3, $nilaiSimilarity, $output);
-
             $jawaban->update([
                 'nilai_llama3' => $nilaiLlama3,
                 'nilai_similarity' => $nilaiSimilarity,
