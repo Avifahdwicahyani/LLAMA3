@@ -160,7 +160,6 @@
     <!-- Datamap -->
     <script src="{{ asset('plugins/d3v3/index.js') }}"></script>
     <script src="{{ asset('plugins/topojson/topojson.min.js') }}"></script>
-    <script src="{{ asset('plugins/datamaps/datamaps.world.min.js') }}"></script>
     <!-- Morrisjs -->
     <script src="{{ asset('plugins/raphael/raphael.min.js') }}"></script>
     <script src="{{ asset('plugins/morris/morris.min.js') }}"></script>
