@@ -317,12 +317,16 @@ class UjianController extends Controller
                 ]);
 
                 $output = $response->json('response') ?? '';
-                preg_match('/\d+(\.\d+)?/', $output, $matches);
+                $outputLines = explode("\n", trim($output));
+                preg_match('/\d+(\.\d+)?/', $outputLines[0] ?? '', $matches);
                 $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
             } catch (\Throwable $e) {
                 Log::error("Gagal memanggil Llama3 untuk jawaban ID {$jawaban->id}: {$e->getMessage()}");
                 $nilaiLlama3 = 0;
             }
+
+            $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
+            $nilaiLlama3 = min($nilaiLlama3, $skorPerSoal);
 
             $jawaban->update([
                     'nilai_llama3' => round($nilaiLlama3, 2),
