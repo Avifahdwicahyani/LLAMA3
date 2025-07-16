@@ -260,8 +260,6 @@ class UjianController extends Controller
             'siswa_id' => $siswaId
         ])->first();
 
-        dd($ujianSiswa, $siswaId, $ujianId);
-
         if (!$ujianSiswa) {
             return response()->json(['success' => false, 'message' => 'Data ujian siswa tidak ditemukan'], 404);
         }
@@ -325,6 +323,8 @@ class UjianController extends Controller
                 Log::error("Gagal memanggil Llama3 untuk jawaban ID {$jawaban->id}: {$e->getMessage()}");
                 $nilaiLlama3 = 0;
             }
+
+            dd($nilaiLlama3, $nilaiSimilarity, $output);
 
             $jawaban->update([
                 'nilai_llama3' => $nilaiLlama3,
