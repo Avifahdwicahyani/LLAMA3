@@ -296,6 +296,7 @@
             .replace(':siswaid', siswaId);
             fetch(url)
                 .then(response => {
+                    console.log(response);
                     if (response.ok) {
                         Swal.fire({
                             icon: 'success',
