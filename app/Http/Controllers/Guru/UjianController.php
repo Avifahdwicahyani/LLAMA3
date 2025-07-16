@@ -228,8 +228,8 @@ class UjianController extends Controller
                 }
 
                 $jawaban->update([
-                    'nilai_llama3' => $nilaiLlama3,
-                    'nilai_similarity' => $nilaiSimilarity,
+                    'nilai_llama3' => round($nilaiLlama3,2),
+                    'nilai_similarity' => round($nilaiSimilarity,2),
                 ]);
 
                 $totalNilaiLlama3 += $nilaiLlama3;
@@ -242,8 +242,8 @@ class UjianController extends Controller
                     'siswa_id' => $siswaId
                 ],
                 [
-                    'nilai_1' => $totalNilaiLlama3,
-                    'nilai_2' => $totalNilaiSimilarity
+                    'nilai_1' => round($totalNilaiLlama3,2),
+                    'nilai_2' => round($totalNilaiSimilarity,2),
                 ]
             );
         }
@@ -325,9 +325,9 @@ class UjianController extends Controller
             }
 
             $jawaban->update([
-                'nilai_llama3' => $nilaiLlama3,
-                'nilai_similarity' => $nilaiSimilarity,
-            ]);
+                    'nilai_llama3' => round($nilaiLlama3, 2),
+                    'nilai_similarity' => round($nilaiSimilarity, 2),
+                ]);
 
             $totalNilaiLlama3 += $nilaiLlama3;
             $totalNilaiSimilarity += $nilaiSimilarity;
@@ -335,8 +335,8 @@ class UjianController extends Controller
 
         // Update nilai ujian siswa
         $ujianSiswa->update([
-            'nilai_1' => $totalNilaiLlama3,
-            'nilai_2' => $totalNilaiSimilarity,
+            'nilai_1' => round($totalNilaiLlama3,2),
+            'nilai_2' => round($totalNilaiSimilarity,2),
         ]);
 
         return response()->json(['success' => true]);
