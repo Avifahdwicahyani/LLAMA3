@@ -211,7 +211,7 @@ class UjianController extends Controller
                     . "- Jika jawaban salah total, beri nilai 0.\n"
                     . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
                     . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
-                    . "Jawab hanya dengan ANGKA BULAT. Contoh: 100 atau 70 atau 0.";
+                    . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
 
                 try {
                     $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
