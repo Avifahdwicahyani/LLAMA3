@@ -260,6 +260,8 @@ class UjianController extends Controller
             'siswa_id' => $siswaId
         ])->first();
 
+        dd($ujianSiswa, $siswaId, $ujianId);
+
         if (!$ujianSiswa) {
             return response()->json(['success' => false, 'message' => 'Data ujian siswa tidak ditemukan'], 404);
         }
