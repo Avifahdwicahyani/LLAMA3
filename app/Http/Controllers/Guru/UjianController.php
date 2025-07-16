@@ -249,4 +249,82 @@ class UjianController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+
+  public function koreksiUjianSiswaPersiswa($ujianId, $siswaId)
+    {
+        $ujianSiswa = UjianSiswa::where([
+            'ujian_id' => $ujianId,
+            'siswa_id' => $siswaId
+        ])->first();
+
+        if (!$ujianSiswa || ($ujianSiswa->status != 'selesai' && $ujianSiswa->nilai_1 !== null && $ujianSiswa->nilai_2 !== null)) {
+            return response()->json(['success' => true, 'message' => 'Tidak perlu dikoreksi']);
+        }
+
+        $jawabanSiswa = JawabanSiswa::with('soal')
+            ->where('siswa_id', $siswaId)
+            ->whereHas('soal', function ($q) use ($ujianId) {
+                $q->where('ujian_id', $ujianId);
+            })->get();
+
+        $totalSoal = $jawabanSiswa->count();
+        if ($totalSoal === 0) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada jawaban']);
+        }
+
+        $skorPerSoal = round(100 / $totalSoal, 2);
+        $totalNilaiLlama3 = 0;
+        $totalNilaiSimilarity = 0;
+
+        foreach ($jawabanSiswa as $jawaban) {
+            $soal = $jawaban->soal;
+            $jawabanSiswaText = strtolower(trim($jawaban->jawaban_dipilih));
+            $jawabanBenar = strtolower(trim($soal->jawaban_benar ?? ''));
+
+            $similarityPercentage = 0;
+            if ($jawabanBenar) {
+                similar_text($jawabanSiswaText, $jawabanBenar, $similarityPercentage);
+            }
+            $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
+
+             $prompt = "Soal Esai: {$soal->pertanyaan}\n"
+                    . "Jawaban Siswa: {$jawaban->jawaban_dipilih}\n"
+                    . "Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
+                    . "Penilaian WAJIB mengikuti pedoman berikut:\n"
+                    . "- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                    . "- Jika jawaban salah total, beri nilai 0.\n"
+                    . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
+                    . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
+                    . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
+                    
+            try {
+                $response = Http::timeout(30)->post('http://localhost:11434/api/generate', [
+                    'model' => 'llama3',
+                    'prompt' => $prompt,
+                    'stream' => false,
+                ]);
+                $output = $response->json('response') ?? '';
+                preg_match('/\d+(\.\d+)?/', $output, $matches);
+                $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
+            } catch (\Throwable $e) {
+                $nilaiLlama3 = 0;
+            }
+
+            $jawaban->update([
+                'nilai_llama3' => $nilaiLlama3,
+                'nilai_similarity' => $nilaiSimilarity,
+            ]);
+
+            $totalNilaiLlama3 += $nilaiLlama3;
+            $totalNilaiSimilarity += $nilaiSimilarity;
+        }
+
+        $ujianSiswa->update([
+            'nilai_1' => $totalNilaiLlama3,
+            'nilai_2' => $totalNilaiSimilarity,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
 }

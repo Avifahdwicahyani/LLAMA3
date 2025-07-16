@@ -275,6 +275,52 @@
                 });
         });
     });
+
+    document.querySelectorAll('.btn-koreksi-siswa').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); 
+            const ujianId = this.getAttribute('data-id');
+             const siswaId = this.getAttribute('data-siswa');
+
+            Swal.fire({
+                title: 'Loading...',
+                text: 'Sedang memproses, harap tunggu...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const url = "{{ route('guru.ujian.show.koreksiUjianSiswaPersiswa', [':ujianid', ':siswaid']) }}"
+            .replace(':ujianid', ujianId)
+            .replace(':siswaid', siswaId);
+            fetch(url)
+                .then(response => {
+                    if (response.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sukses!',
+                            text: 'Ujian siswa telah dinilai.',
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Terjadi kesalahan!'
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Terjadi kesalahan!'
+                    });
+                });
+        });
+    });
 </script>
 </body>
 

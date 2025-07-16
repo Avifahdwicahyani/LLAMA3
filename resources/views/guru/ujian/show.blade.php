@@ -163,7 +163,9 @@
                                             </td>
                                             <td>{{ $siswas->nilai_1 ?? 0 }}</td>
                                             <td>{{ $siswas->nilai_2 ?? 0 }}</td>
-                                             <td> <a href="{{ route('guru.ujian.show.nilaisiswa', [$siswas->siswa?->id, $ujian->id]) }}" class="btn btn-sm btn-info">Detail</a></td>
+                                             <td> 
+                                                  <a href="#" class="btn btn-sm btn-success btn-koreksi-siswa" id="koreksiUjian" data-id="{{ $ujian->id }}" data-siswa="{{$siswas->id}}">Koreksi Ujian</a>
+                                                <a href="{{ route('guru.ujian.show.nilaisiswa', [$siswas->siswa?->id, $ujian->id]) }}" class="btn btn-sm btn-info">Detail</a></td>
                                         </tr>
                                     @endforeach
                                 </tbody>
