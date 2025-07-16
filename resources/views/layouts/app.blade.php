@@ -251,7 +251,13 @@
             fetch(url)
                 .then(response => {
                     if (response.ok) {
-                        location.reload();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sukses!',
+                            text: 'Ujian siswa telah dinilai.',
+                        }).then(() => {
+                            location.reload();
+                        });
                     } else {
                         Swal.fire({
                             icon: 'error',
