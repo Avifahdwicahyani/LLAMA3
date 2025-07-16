@@ -253,11 +253,16 @@ class UjianController extends Controller
 
 
   public function koreksiUjianSiswaPersiswa($ujianId, $siswaId)
-    {
+{
+    try {
         $ujianSiswa = UjianSiswa::where([
             'ujian_id' => $ujianId,
             'siswa_id' => $siswaId
         ])->first();
+
+        if (!$ujianSiswa) {
+            return response()->json(['success' => false, 'message' => 'Data ujian siswa tidak ditemukan'], 404);
+        }
 
         $jawabanSiswa = JawabanSiswa::with('soal')
             ->where('siswa_id', $siswaId)
@@ -267,7 +272,7 @@ class UjianController extends Controller
 
         $totalSoal = $jawabanSiswa->count();
         if ($totalSoal === 0) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada jawaban']);
+            return response()->json(['success' => false, 'message' => 'Tidak ada jawaban ditemukan']);
         }
 
         $skorPerSoal = round(100 / $totalSoal, 2);
@@ -276,36 +281,46 @@ class UjianController extends Controller
 
         foreach ($jawabanSiswa as $jawaban) {
             $soal = $jawaban->soal;
+
+            if (!$soal) {
+                Log::warning("Soal tidak ditemukan untuk jawaban ID {$jawaban->id}");
+                continue;
+            }
+
             $jawabanSiswaText = strtolower(trim($jawaban->jawaban_dipilih));
             $jawabanBenar = strtolower(trim($soal->jawaban_benar ?? ''));
 
+            // Similarity calculation
             $similarityPercentage = 0;
             if ($jawabanBenar) {
                 similar_text($jawabanSiswaText, $jawabanBenar, $similarityPercentage);
             }
             $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
 
-             $prompt = "Soal Esai: {$soal->pertanyaan}\n"
-                    . "Jawaban Siswa: {$jawaban->jawaban_dipilih}\n"
-                    . "Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
-                    . "Penilaian WAJIB mengikuti pedoman berikut:\n"
-                    . "- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
-                    . "- Jika jawaban salah total, beri nilai 0.\n"
-                    . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
-                    . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
-                    . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
+            // Prompt generation
+            $prompt = "Soal Esai: {$soal->pertanyaan}\n"
+                . "Jawaban Siswa: {$jawaban->jawaban_dipilih}\n"
+                . "Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
+                . "Penilaian WAJIB mengikuti pedoman berikut:\n"
+                . "- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                . "- Jika jawaban salah total, beri nilai 0.\n"
+                . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
+                . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
+                . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
 
+            // Llama3 API call
             try {
                 $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
                     'model' => 'llama3',
                     'prompt' => $prompt,
                     'stream' => false,
                 ]);
+
                 $output = $response->json('response') ?? '';
                 preg_match('/\d+(\.\d+)?/', $output, $matches);
                 $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
             } catch (\Throwable $e) {
-                Log::error('Gagal memanggil llama3: ' . $e->getMessage());
+                Log::error("Gagal memanggil Llama3 untuk jawaban ID {$jawaban->id}: {$e->getMessage()}");
                 $nilaiLlama3 = 0;
             }
 
@@ -318,11 +333,19 @@ class UjianController extends Controller
             $totalNilaiSimilarity += $nilaiSimilarity;
         }
 
+        // Update nilai ujian siswa
         $ujianSiswa->update([
             'nilai_1' => $totalNilaiLlama3,
             'nilai_2' => $totalNilaiSimilarity,
         ]);
 
         return response()->json(['success' => true]);
+    } catch (\Throwable $e) {
+        Log::error("Terjadi kesalahan saat mengoreksi ujian siswa ID {$siswaId} untuk ujian {$ujianId}: {$e->getMessage()}");
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan saat memproses data. Silakan coba lagi.',
+        ], 500);
     }
+}
 }
