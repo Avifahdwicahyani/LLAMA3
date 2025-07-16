@@ -48,42 +48,4 @@
     </div>
 </div>
    </div>
-
-   <script>
-document.getElementById('koreksiUjian').addEventListener('click', function(event) {
-    event.preventDefault(); // Mencegah default action
-    const ujianId = this.getAttribute('data-id');
-
-    Swal.fire({
-        title: 'Loading...',
-        text: 'Sedang memproses, harap tunggu...',
-        allowOutsideClick: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
-
-    const url = "{{ route('guru.ujian.show.koreksi', ':id') }}".replace(':id', ujianId);
-
-    fetch(url)
-        .then(response => {
-            if (response.ok) {
-                location.reload();
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Terjadi kesalahan!'
-                });
-            }
-        })
-        .catch(error => {
-            Swal.fire({
-                icon: 'error',
-                title: 'Oops...',
-                text: 'Terjadi kesalahan!'
-            });
-        });
-});
-</script>
 @endsection
