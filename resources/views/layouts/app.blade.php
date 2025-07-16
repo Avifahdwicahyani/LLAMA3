@@ -175,7 +175,6 @@
     <script src="{{ asset('plugins/tables/js/datatable/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('plugins/tables/js/datatable-init/datatable-basic.min.js') }}"></script>
 
-    <script src="{{ asset('js/dashboard/dashboard-1.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
