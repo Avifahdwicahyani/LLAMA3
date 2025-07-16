@@ -82,19 +82,15 @@ class UjianController extends Controller
 
         $siswa = Siswa::where('user_id', auth()->id())->firstOrFail();
 
-        $check = UjianSiswa::where('ujian_id', $id)->where('siswa_id', auth()->user()->siswa->id)->first();
-
-        if($check) {
-            UjianSiswa::updateOrCreate(
-                [
-                    'ujian_id' => $id,
-                    'siswa_id' => auth()->user()->siswa->id
-                ],
-                [
-                    'status' => 'mengerjakan'
-                ]
-            );
-        }
+        UjianSiswa::updateOrCreate(
+            [
+                'ujian_id' => $id,
+                'siswa_id' => auth()->user()->siswa->id
+            ],
+            [
+                'status' => 'mengerjakan'
+            ]
+        );
 
         $now = \Carbon\Carbon::now('Asia/Jakarta');
         $startTime = \Carbon\Carbon::parse($ujian->jadwal);
@@ -138,58 +134,16 @@ class UjianController extends Controller
         ) {
             return response()->json(['success' => true]);
         }
-
-        $totalSoal = Soal::where('ujian_id', $ujian->id)->count();
-        $skorPerSoal = $totalSoal > 0 ? round(100 / $totalSoal, 2) : 0;
-
-        set_time_limit(180);
-
-        $prompt = "Soal Esai: {$soal->pertanyaan}\n"
-                ."Jawaban Siswa: {$request->jawaban_dipilih}\n"
-                ."Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
-                ."Penilaian WAJIB mengikuti pedoman berikut:\n"
-                ."- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar menurut soal, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
-                ."- Jika jawaban salah total, tidak relevan, atau tidak menjawab, beri nilai 0.\n"
-                ."- Jika jawaban hanya sebagian benar, kurang lengkap, atau mengandung kesalahan kecil, nilai harus dikurangi secara proporsional.\n"
-                ."- Fokus hanya pada kebenaran dan kelengkapan isi. Jangan terpengaruh gaya bahasa, panjang jawaban, atau opini pribadi.\n"
-                ."- Jangan memberikan nilai acak, kreatif, atau subjektif. Nilai harus berdasarkan ketepatan dan kesesuaian isi jawaban.\n\n"
-                ."Catatan:\n"
-                ."Soal ini bersifat esai TERBATAS (tertutup) dengan jawaban yang benar sudah diketahui dan terdefinisi. Oleh karena itu, model harus menilai secara presisi, bukan interpretatif.\n\n"
-                ."Jawab hanya dengan ANGKA BULAT. Contoh: 100 atau 70 atau 0. Jangan beri penjelasan tambahan.";
-
-        $response = Http::timeout(120)->post('http://31.97.111.43:11434/api/generate', [
-            'model' => 'llama3',
-            'prompt' => $prompt,
-            'stream' => false,
-        ]);
-
-        $output = $response->json('response');
-        preg_match('/\d+(\.\d+)?/', $output, $matches);
-        $nilai = isset($matches[0]) ? floatval($matches[0]) : 0;
-
-        $jawabanSiswa = trim(strtolower($request->jawaban_dipilih));
-        $jawabanBenar = trim(strtolower($soal->jawaban_benar));
-
-        $similarityPercentage = 0;
-
-        if (!empty($jawabanBenar)) {
-            similar_text($jawabanSiswa, $jawabanBenar, $similarityPercentage);
-        }
-
-        $nilaisimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
-
-        JawabanSiswa::updateOrCreate(
-            [
-                'siswa_id' => $siswa->id,
-                'soal_id' => $soal->id,
-            ],
-            [
-                'jawaban_dipilih' => $request->jawaban_dipilih,
-                'waktu_dijawab' => now(),
-                'nilai_llama3' => $nilai,
-                'nilai_similarity' => $nilaisimilarity
-            ]
-        );
+       JawabanSiswa::updateOrCreate(
+        [
+            'siswa_id' => $siswa->id,
+            'soal_id' => $soal->id,
+        ],
+        [
+            'jawaban_dipilih' => $request->jawaban_dipilih,
+            'waktu_dijawab' => now(),
+        ]
+    );
 
         return response()->json(['success' => true]);
     }
@@ -203,14 +157,63 @@ class UjianController extends Controller
         $siswaId = auth()->user()->siswa->id;
         $ujianId = $request->ujian_id;
 
-        $jawabanSiswa = \App\Models\JawabanSiswa::where('siswa_id', $siswaId)
+        $jawabanSiswa = JawabanSiswa::where('siswa_id', $siswaId)
             ->whereHas('soal', function ($query) use ($ujianId) {
                 $query->where('ujian_id', $ujianId);
             })
+            ->with('soal')
             ->get();
 
-        $totalNilaiLlama3 = $jawabanSiswa->sum('nilai_llama3');
-        $totalNilaiSimilarity = $jawabanSiswa->sum('nilai_similarity');
+        $totalNilaiLlama3 = 0;
+        $totalNilaiSimilarity = 0;
+        $totalSoal = $jawabanSiswa->count();
+        $skorPerSoal = $totalSoal > 0 ? round(100 / $totalSoal, 2) : 0;
+
+        foreach ($jawabanSiswa as $jawaban) {
+            $soal = $jawaban->soal;
+            $jawabanSiswaText = trim(strtolower($jawaban->jawaban_dipilih));
+            $jawabanBenar = trim(strtolower($soal->jawaban_benar ?? ''));
+
+            $similarityPercentage = 0;
+            if (!empty($jawabanBenar)) {
+                similar_text($jawabanSiswaText, $jawabanBenar, $similarityPercentage);
+            }
+            $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
+
+             $prompt = "Soal Esai: {$soal->pertanyaan}\n"
+                ."Jawaban Siswa: {$request->jawaban_dipilih}\n"
+                ."Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
+                ."Penilaian WAJIB mengikuti pedoman berikut:\n"
+                ."- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar menurut soal, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                ."- Jika jawaban salah total, tidak relevan, atau tidak menjawab, beri nilai 0.\n"
+                ."- Jika jawaban hanya sebagian benar, kurang lengkap, atau mengandung kesalahan kecil, nilai harus dikurangi secara proporsional.\n"
+                ."- Fokus hanya pada kebenaran dan kelengkapan isi. Jangan terpengaruh gaya bahasa, panjang jawaban, atau opini pribadi.\n"
+                ."- Jangan memberikan nilai acak, kreatif, atau subjektif. Nilai harus berdasarkan ketepatan dan kesesuaian isi jawaban.\n\n"
+                ."Catatan:\n"
+                ."Soal ini bersifat esai TERBATAS (tertutup) dengan jawaban yang benar sudah diketahui dan terdefinisi. Oleh karena itu, model harus menilai secara presisi, bukan interpretatif.\n\n"
+                ."Jawab hanya dengan ANGKA BULAT. Contoh: 100 atau 70 atau 0. Jangan beri penjelasan tambahan.";
+
+            try {
+                $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
+                    'model' => 'llama3',
+                    'prompt' => $prompt,
+                    'stream' => false,
+                ]);
+                $output = $response->json('response');
+                preg_match('/\d+(\.\d+)?/', $output, $matches);
+                $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
+            } catch (\Throwable $e) {
+                $nilaiLlama3 = 0; 
+            }
+
+            $jawaban->update([
+                'nilai_llama3' => $nilaiLlama3,
+                'nilai_similarity' => $nilaiSimilarity,
+            ]);
+
+            $totalNilaiLlama3 += $nilaiLlama3;
+            $totalNilaiSimilarity += $nilaiSimilarity;
+        }
 
         UjianSiswa::updateOrCreate(
             [
