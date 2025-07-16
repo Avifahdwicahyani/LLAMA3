@@ -15,6 +15,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class UjianController extends Controller
@@ -295,7 +296,7 @@ class UjianController extends Controller
                     . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
 
             try {
-                $response = Http::timeout(30)->post('http://localhost:11434/api/generate', [
+                $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
                     'model' => 'llama3',
                     'prompt' => $prompt,
                     'stream' => false,
@@ -304,6 +305,7 @@ class UjianController extends Controller
                 preg_match('/\d+(\.\d+)?/', $output, $matches);
                 $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
             } catch (\Throwable $e) {
+                Log::error('Gagal memanggil llama3: ' . $e->getMessage());
                 $nilaiLlama3 = 0;
             }
 
