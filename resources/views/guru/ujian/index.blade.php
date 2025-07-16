@@ -32,7 +32,7 @@
                     <td>
                         <a href="{{ route('guru.ujian.show', $ujian->id) }}" class="btn btn-sm btn-info">Detail</a>
                         <a href="{{ route('guru.ujian.edit', $ujian->id) }}" class="btn btn-sm btn-warning">Edit</a>
-
+                        <a href="{{ route('guru.ujian.show.koreksi', $ujian->id) }}" class="btn btn-sm btn-success">Koreksi Ujian</a>
                         <form action="{{ route('guru.ujian.destroy', $ujian->id) }}" method="POST" class="d-inline form-delete">
                             @csrf
                             @method('DELETE')

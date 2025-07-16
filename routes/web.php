@@ -31,6 +31,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::post('guru/siswa/import', [SiswaController::class, 'import'])->name('guru.siswa.import');
     Route::resource('guru/siswa', SiswaController::class)->names('guru.siswa');
+     Route::get('guru/ujian/koreksi/{ujianid}', [UjianController::class, 'showNilaisiswa'])->name('guru.ujian.show.koreksi');
     Route::get('guru/ujian-nilai-siswa/{id}/{ujianid}', [UjianController::class, 'showNilaisiswa'])->name('guru.ujian.show.nilaisiswa');
     Route::get('guru/ujian/export/{id}', [UjianController::class, 'exportHasilUjian'])->name('guru.ujian.exportHasilUjian');
     Route::resource('guru/ujian', UjianController::class)->names('guru.ujian');
