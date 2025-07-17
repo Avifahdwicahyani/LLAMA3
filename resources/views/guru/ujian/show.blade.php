@@ -14,10 +14,10 @@
     <div class="card card-body">
 <ul class="nav nav-tabs mb-3" id="ujianTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link" id="soal-tab" data-toggle="tab" href="#soal" role="tab" aria-controls="soal" aria-selected="true">Daftar Soal</a>
+            <a class="nav-link" id="soal-tab" data-toggle="tab" href="#soal" role="tab" aria-controls="soal" aria-selected="false">Daftar Soal</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Hasil Ujian</a>
+            <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Hasil Ujian</a>
         </li>
     </ul>
 
