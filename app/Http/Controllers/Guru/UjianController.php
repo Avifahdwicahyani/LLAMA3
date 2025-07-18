@@ -287,8 +287,12 @@ class UjianController extends Controller
                 continue;
             }
 
-            $jawabanSiswaText = strtolower(trim($jawaban->jawaban_dipilih));
-            $jawabanBenar = strtolower(trim($soal->jawaban_benar ?? ''));
+            function normalisasiJawaban($text) {
+                return preg_replace("/[^\w\s]/u", '', strtolower(trim($text)));
+            }
+
+            $jawabanSiswaText = normalisasiJawaban($jawaban->jawaban_dipilih);
+            $jawabanBenar = normalisasiJawaban($soal->jawaban_benar ?? '');
 
             // Similarity calculation
             $similarityPercentage = 0;
@@ -298,15 +302,19 @@ class UjianController extends Controller
             $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
 
             // Prompt generation
-            $prompt = "Soal Esai: {$soal->pertanyaan}\n"
-                . "Jawaban Siswa: {$jawaban->jawaban_dipilih}\n"
-                . "Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
-                . "Penilaian WAJIB mengikuti pedoman berikut:\n"
-                . "- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
-                . "- Jika jawaban salah total, beri nilai 0.\n"
-                . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
-                . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
-                . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
+            $prompt = "Soal Esai:\n{$soal->pertanyaan}\n\n"
+                    . "Jawaban Siswa:\n{$jawaban->jawaban_dipilih}\n\n"
+                    . "Petunjuk Penilaian:\n"
+                    . "- Nilai diberikan dalam ANGKA DESIMAL, contoh: {$skorPerSoal}.0, 75.0, 0.0.\n"
+                    . "- Skor maksimal adalah {$skorPerSoal}.\n"
+                    . "- Jika jawaban siswa SEPENUHNYA BENAR secara makna dan isi (meskipun tidak identik secara kata per kata), berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                    . "- Jika jawaban benar SEBAGIAN, berikan skor yang dikurangi secara proporsional.\n"
+                    . "- Jika jawaban SALAH TOTAL atau tidak sesuai, beri nilai 0.\n"
+                    . "- Abaikan gaya bahasa, typo, dan urutan kalimat, selama makna dan fakta tetap benar.\n"
+                    . "- Fokus hanya pada kebenaran FAKTUAL dan KELENGKAPAN isi jawaban.\n\n"
+                    . "Perintah:\n"
+                    . "Jawab HANYA dengan ANGKA DESIMAL tanpa penjelasan apa pun.\n\n"
+                    . "Skor:";
 
             // Llama3 API call
             try {

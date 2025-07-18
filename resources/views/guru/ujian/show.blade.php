@@ -6,6 +6,7 @@
     <div class="card mb-4">
         <div class="card-body">
             <h5 class="card-title">Mata Pelajaran : {{ $ujian->mataPelajaran->nama_mapel ?? '-' }}</h5>
+            <h5 class="card-title">Nama Ujian : {{ $ujian->name ?? '-' }}</h5>
             <p class="card-text mb-0">Jadwal : {{ \Carbon\Carbon::parse($ujian->jadwal)->format('d F Y H:i:s') }}</p>
             <p class="card-text mt-0">Waktu Selesai : {{ \Carbon\Carbon::parse($ujian->waktu_selesai)->format('d F Y H:i:s') }}</p>
         </div>
@@ -14,10 +15,10 @@
     <div class="card card-body">
 <ul class="nav nav-tabs mb-3" id="ujianTab" role="tablist">
         <li class="nav-item">
-            <a class="nav-link" id="soal-tab" data-toggle="tab" href="#soal" role="tab" aria-controls="soal" aria-selected="false">Daftar Soal</a>
+            <a class="nav-link active" id="soal-tab" data-toggle="tab" href="#soal" role="tab" aria-controls="soal" aria-selected="true">Daftar Soal</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link active" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="true">Hasil Ujian</a>
+            <a class="nav-link" id="info-tab" data-toggle="tab" href="#info" role="tab" aria-controls="info" aria-selected="false">Hasil Ujian</a>
         </li>
     </ul>
 
@@ -143,8 +144,8 @@
                                         <th>Siswa</th>
                                           <th>Nis</th>
                                         <th>Status</th>
-                                        <th>Nilai 1</th>
-                                        <th>Nilai 2</th>
+                                        <th>Nilai LLAMA3</th>
+                                        <th>Nilai Similarity</th>
                                         <th>Detail</th>
                                     </tr>
                                 </thead>
