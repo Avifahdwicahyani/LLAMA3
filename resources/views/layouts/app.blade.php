@@ -303,6 +303,7 @@
                             title: 'Sukses!',
                             text: 'Ujian siswa telah dinilai.',
                         }).then(() => {
+                            window.location.hash = '#info'; 
                             location.reload();
                         });
                     } else {
@@ -322,6 +323,24 @@
                 });
         });
     });
+
+document.addEventListener('DOMContentLoaded', function () {
+    const hash = window.location.hash;
+
+    if (hash === '#info') {
+        document.querySelectorAll('.nav-link, .tab-pane').forEach(el => {
+            el.classList.remove('active', 'show');
+        });
+        const tabLink = document.querySelector(`a[href="${hash}"]`);
+        if (tabLink) {
+            tabLink.classList.add('active');
+        }
+        const tabPane = document.querySelector(hash);
+        if (tabPane) {
+            tabPane.classList.add('active', 'show');
+        }
+    }
+});
 </script>
 </body>
 
