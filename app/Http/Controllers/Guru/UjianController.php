@@ -251,6 +251,9 @@ class UjianController extends Controller
         return response()->json(['success' => true]);
     }
 
+     function normalisasiJawaban($text) {
+                return preg_replace("/[^\w\s]/u", '', strtolower(trim($text)));
+            }
 
   public function koreksiUjianSiswaPersiswa($ujianId, $siswaId)
 {
@@ -287,12 +290,8 @@ class UjianController extends Controller
                 continue;
             }
 
-            function normalisasiJawaban($text) {
-                return preg_replace("/[^\w\s]/u", '', strtolower(trim($text)));
-            }
-
-            $jawabanSiswaText = normalisasiJawaban($jawaban->jawaban_dipilih);
-            $jawabanBenar = normalisasiJawaban($soal->jawaban_benar ?? '');
+            $jawabanSiswaText = $this->normalisasiJawaban($jawaban->jawaban_dipilih);
+            $jawabanBenar = $this->normalisasiJawaban($soal->jawaban_benar ?? '');
 
             // Similarity calculation
             $similarityPercentage = 0;
