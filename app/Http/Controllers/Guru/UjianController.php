@@ -158,6 +158,45 @@ class UjianController extends Controller
         return view('guru.ujian.nilaisiswa', compact('ujianSiswa'));
     }
 
+     function normalisasiJawaban($text) {
+        return preg_replace("/[^\w\s]/u", '', strtolower(trim($text)));
+    }
+
+    function textToVector($text) {
+        $words = explode(' ', $text);
+        $vector = [];
+        foreach ($words as $word) {
+            if ($word !== '') {
+                if (!isset($vector[$word])) {
+                    $vector[$word] = 0;
+                }
+                $vector[$word]++;
+            }
+        }
+        return $vector;
+    }
+
+    function cosineSimilarity($vec1, $vec2) {
+        $dotProduct = 0;
+        $magnitudeA = 0;
+        $magnitudeB = 0;
+
+        $allKeys = array_unique(array_merge(array_keys($vec1), array_keys($vec2)));
+
+        foreach ($allKeys as $key) {
+            $a = $vec1[$key] ?? 0;
+            $b = $vec2[$key] ?? 0;
+
+            $dotProduct += $a * $b;
+            $magnitudeA += $a * $a;
+            $magnitudeB += $b * $b;
+        }
+
+        if ($magnitudeA == 0 || $magnitudeB == 0) return 0;
+
+        return $dotProduct / (sqrt($magnitudeA) * sqrt($magnitudeB));
+    }
+
     public function koreksiUjianSiswa($ujianId)
     {
         $siswaIds = JawabanSiswa::with('soal')
@@ -195,24 +234,35 @@ class UjianController extends Controller
 
             foreach ($jawabanSiswa as $jawaban) {
                 $soal = $jawaban->soal;
-                $jawabanSiswaText = trim(strtolower($jawaban->jawaban_dipilih));
-                $jawabanBenar = trim(strtolower($soal->jawaban_benar ?? ''));
+                $jawabanSiswaText = $this->normalisasiJawaban($jawaban->jawaban_dipilih);
+                $jawabanBenar = $this->normalisasiJawaban($soal->jawaban_benar ?? '');
 
-                $similarityPercentage = 0;
-                if (!empty($jawabanBenar)) {
-                    similar_text($jawabanSiswaText, $jawabanBenar, $similarityPercentage);
-                }
-                $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
+                // Similarity calculation
+                $jawabanSiswaText = $this->normalisasiJawaban($jawaban->jawaban_dipilih);
+                $jawabanBenar = $this->normalisasiJawaban($soal->jawaban_benar ?? '');
 
-                $prompt = "Soal Esai: {$soal->pertanyaan}\n"
-                    . "Jawaban Siswa: {$jawaban->jawaban_dipilih}\n"
-                    . "Berdasarkan soal dan jawaban siswa di atas, berikan nilai objektif dalam bentuk angka bulat dari 0 sampai {$skorPerSoal}.\n"
-                    . "Penilaian WAJIB mengikuti pedoman berikut:\n"
-                    . "- Jika jawaban siswa 100% benar dan sesuai dengan jawaban yang benar, maka berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
-                    . "- Jika jawaban salah total, beri nilai 0.\n"
-                    . "- Jika hanya sebagian benar, nilai harus dikurangi secara proporsional.\n"
-                    . "- Fokus hanya pada kebenaran dan kelengkapan isi.\n\n"
-                    . "Jawab hanya dengan ANGKA DESIMAL. Contoh: 100.0 atau 70.5 atau 0.0.";
+                $vectorSiswa =  $this->textToVector($jawabanSiswaText);
+                $vectorBenar =  $this->textToVector($jawabanBenar);
+
+                $cosine =  $this->cosineSimilarity($vectorSiswa, $vectorBenar);
+
+                // Kalikan dengan skor per soal
+                $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
+
+                // Prompt generation
+                $prompt = "Soal Esai:\n{$soal->pertanyaan}\n\n"
+                        . "Jawaban Siswa:\n{$jawaban->jawaban_dipilih}\n\n"
+                        . "Petunjuk Penilaian:\n"
+                        . "- Nilai diberikan dalam ANGKA DESIMAL, contoh: {$skorPerSoal}.0, 75.0, 0.0.\n"
+                        . "- Skor maksimal adalah {$skorPerSoal}.\n"
+                        . "- Jika jawaban siswa SEPENUHNYA BENAR secara makna dan isi (meskipun tidak identik secara kata per kata), berikan NILAI PENUH yaitu {$skorPerSoal}.\n"
+                        . "- Jika jawaban benar SEBAGIAN, berikan skor yang dikurangi secara proporsional.\n"
+                        . "- Jika jawaban SALAH TOTAL atau tidak sesuai, beri nilai 0.\n"
+                        . "- Abaikan gaya bahasa, typo, dan urutan kalimat, selama makna dan fakta tetap benar.\n"
+                        . "- Fokus hanya pada kebenaran FAKTUAL dan KELENGKAPAN isi jawaban.\n\n"
+                        . "Perintah:\n"
+                        . "Jawab HANYA dengan ANGKA DESIMAL tanpa penjelasan apa pun.\n\n"
+                        . "Skor:";
 
                 try {
                     $response = Http::timeout(120)->post('http://localhost:11434/api/generate', [
@@ -250,10 +300,6 @@ class UjianController extends Controller
 
         return response()->json(['success' => true]);
     }
-
-     function normalisasiJawaban($text) {
-                return preg_replace("/[^\w\s]/u", '', strtolower(trim($text)));
-            }
 
   public function koreksiUjianSiswaPersiswa($ujianId, $siswaId)
 {
@@ -294,11 +340,16 @@ class UjianController extends Controller
             $jawabanBenar = $this->normalisasiJawaban($soal->jawaban_benar ?? '');
 
             // Similarity calculation
-            $similarityPercentage = 0;
-            if ($jawabanBenar) {
-                similar_text($jawabanSiswaText, $jawabanBenar, $similarityPercentage);
-            }
-            $nilaiSimilarity = round(($similarityPercentage / 100) * $skorPerSoal, 2);
+            $jawabanSiswaText = $this->normalisasiJawaban($jawaban->jawaban_dipilih);
+            $jawabanBenar = $this->normalisasiJawaban($soal->jawaban_benar ?? '');
+
+            $vectorSiswa =  $this->textToVector($jawabanSiswaText);
+            $vectorBenar =  $this->textToVector($jawabanBenar);
+
+            $cosine =  $this->cosineSimilarity($vectorSiswa, $vectorBenar);
+
+            // Kalikan dengan skor per soal
+            $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
 
             // Prompt generation
             $prompt = "Soal Esai:\n{$soal->pertanyaan}\n\n"
