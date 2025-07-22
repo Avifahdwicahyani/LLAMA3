@@ -231,7 +231,7 @@ class UjianController extends Controller
             $totalNilaiSimilarity = 0;
             $totalSoal = $jawabanSiswa->count();
             $skorPerSoal = $totalSoal > 0 ? round(100 / $totalSoal, 2) : 0;
-
+            $totalPercentTextSimilarity = 0;
             foreach ($jawabanSiswa as $jawaban) {
                 $soal = $jawaban->soal;
                 $jawabanSiswaText = $this->normalisasiJawaban($jawaban->jawaban_dipilih);
@@ -247,6 +247,7 @@ class UjianController extends Controller
                 $cosine =  $this->cosineSimilarity($vectorSiswa, $vectorBenar);
 
                 $percent_text_similarity = round($cosine * 100, 2);
+                $totalPercentTextSimilarity += $percent_text_similarity;
                 // Kalikan dengan skor per soal
                 $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
 
@@ -287,6 +288,7 @@ class UjianController extends Controller
                 $totalNilaiLlama3 += $nilaiLlama3;
                 $totalNilaiSimilarity += $nilaiSimilarity;
             }
+            $presentaseNilai2 = $totalSoal > 0 ? round($totalPercentTextSimilarity / $totalSoal, 2) : 0;
 
             UjianSiswa::updateOrCreate(
                 [
@@ -296,6 +298,7 @@ class UjianController extends Controller
                 [
                     'nilai_1' => round($totalNilaiLlama3,2),
                     'nilai_2' => round($totalNilaiSimilarity,2),
+                    'presentase_nilai_2' => $presentaseNilai2,
                 ]
             );
         }
@@ -330,6 +333,8 @@ class UjianController extends Controller
         $totalNilaiLlama3 = 0;
         $totalNilaiSimilarity = 0;
 
+        $totalPercentTextSimilarity = 0;
+
         foreach ($jawabanSiswa as $jawaban) {
             $soal = $jawaban->soal;
 
@@ -353,7 +358,7 @@ class UjianController extends Controller
             $percent_text_similarity = round($cosine * 100, 2);
             // Kalikan dengan skor per soal
             $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
-
+            $totalPercentTextSimilarity += $percent_text_similarity;
             // Prompt generation
             $prompt = "Soal Esai:\n{$soal->pertanyaan}\n\n"
                     . "Jawaban Siswa:\n{$jawaban->jawaban_dipilih}\n\n"
@@ -399,10 +404,13 @@ class UjianController extends Controller
             $totalNilaiSimilarity += $nilaiSimilarity;
         }
 
+        $presentaseNilai2 = $totalSoal > 0 ? round($totalPercentTextSimilarity / $totalSoal, 2) : 0;
+
         // Update nilai ujian siswa
         $ujianSiswa->update([
             'nilai_1' => round($totalNilaiLlama3,2),
             'nilai_2' => round($totalNilaiSimilarity,2),
+            'presentase_nilai_2' => $presentaseNilai2,
         ]);
 
         return response()->json(['success' => true]);

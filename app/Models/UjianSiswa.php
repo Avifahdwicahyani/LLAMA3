@@ -13,7 +13,8 @@ class UjianSiswa extends Model
         'siswa_id',
         'status',
         'nilai_1',
-        'nilai_2'
+        'nilai_2',
+        'presentase_nilai_2'
     ];
 
 
