@@ -15,6 +15,7 @@
                     <th>Jawaban Dipilih</th>
                     <th>Nilai LLAMA3</th>
                     <th>Nilai Similarity</th>
+                    <th>Presentase Similarity</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,6 +26,7 @@
                     <td>{{ $jawaban->jawaban_dipilih ?? '-' }}</td>
                     <td>{{ $jawaban->nilai_llama3 ?? '0' }}</td>
                     <td>{{ $jawaban->nilai_similarity ?? '0' }}</td>
+                    <td>{{ $jawaban->percent_text_similarity ?? '0' }}%</td>
                 </tr>
                 @empty
                 <tr>

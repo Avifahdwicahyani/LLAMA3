@@ -246,6 +246,7 @@ class UjianController extends Controller
 
                 $cosine =  $this->cosineSimilarity($vectorSiswa, $vectorBenar);
 
+                $percent_text_similarity = round($cosine * 100, 2);
                 // Kalikan dengan skor per soal
                 $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
 
@@ -280,6 +281,7 @@ class UjianController extends Controller
                 $jawaban->update([
                     'nilai_llama3' => round($nilaiLlama3,2),
                     'nilai_similarity' => round($nilaiSimilarity,2),
+                    'percent_text_similarity' => round($percent_text_similarity, 2)
                 ]);
 
                 $totalNilaiLlama3 += $nilaiLlama3;
@@ -348,6 +350,7 @@ class UjianController extends Controller
 
             $cosine =  $this->cosineSimilarity($vectorSiswa, $vectorBenar);
 
+            $percent_text_similarity = round($cosine * 100, 2);
             // Kalikan dengan skor per soal
             $nilaiSimilarity = round($cosine * $skorPerSoal, 2);
 
@@ -389,6 +392,7 @@ class UjianController extends Controller
             $jawaban->update([
                     'nilai_llama3' => round($nilaiLlama3, 2),
                     'nilai_similarity' => round($nilaiSimilarity, 2),
+                    'percent_text_similarity' => round($percent_text_similarity, 2)
                 ]);
 
             $totalNilaiLlama3 += $nilaiLlama3;

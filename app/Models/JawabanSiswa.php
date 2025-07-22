@@ -12,7 +12,8 @@ class JawabanSiswa extends Model
         'jawaban_dipilih',
         'waktu_dijawab',
         'nilai_llama3',
-        'nilai_similarity'
+        'nilai_similarity',
+        'percent_text_similarity'
     ];
 
 
