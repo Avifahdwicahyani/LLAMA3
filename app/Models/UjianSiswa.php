@@ -14,7 +14,8 @@ class UjianSiswa extends Model
         'status',
         'nilai_1',
         'nilai_2',
-        'presentase_nilai_2'
+        'presentase_nilai_2',
+        'time_koreksi'
     ];
 
 

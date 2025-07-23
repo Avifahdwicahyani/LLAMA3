@@ -147,6 +147,7 @@
                                         <th>Nilai LLAMA3</th>
                                         <th>Nilai Similarity</th>
                                           <th>Persentase Similarity</th>
+                                          <th>Waktu</th>
                                         <th>Detail</th>
                                     </tr>
                                 </thead>
@@ -166,6 +167,21 @@
                                             <td>{{ $siswas->nilai_1 ?? 0 }}</td>
                                             <td>{{ $siswas->nilai_2 ?? 0 }}</td>
                                              <td>{{ $siswas->presentase_nilai_2 ?? 0 }}%</td>
+                                              @php
+                                                $detik = $siswas->time_koreksi ?? 0;
+                                                $jam = floor($detik / 3600);
+                                                $menit = floor(($detik % 3600) / 60);
+
+                                                if ($jam > 0) {
+                                                    $durasiFormat = $jam . ' jam' . ($menit > 0 ? " {$menit} menit" : '');
+                                                } elseif ($menit > 0) {
+                                                    $durasiFormat = $menit . ' menit';
+                                                } else {
+                                                    $durasiFormat = 'Kurang dari 1 menit';
+                                                }
+                                            @endphp
+
+                                            <td>{{ $durasiFormat }}</td>
                                              <td> 
                                                   <a href="#" class="btn btn-sm btn-success btn-koreksi-siswa" id="koreksiUjian" data-id="{{ $ujian->id }}" data-siswa="{{$siswas->siswa?->id}}">Koreksi Ujian</a>
                                                 <a href="{{ route('guru.ujian.show.nilaisiswa', [$siswas->siswa?->id, $ujian->id]) }}" class="btn btn-sm btn-info">Detail</a></td>

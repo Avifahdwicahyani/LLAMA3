@@ -12,6 +12,7 @@
                 <tr>
                     <th>No</th>
                     <th>Soal</th>
+                    <th>Jawaban Guru</th>
                     <th>Jawaban Dipilih</th>
                     <th>Nilai LLAMA3</th>
                     <th>Nilai Similarity</th>
@@ -23,6 +24,7 @@
                 <tr>
                     <td>{{ $loop->iteration }}</td>
                     <td>{!! $jawaban->soal->pertanyaan ?? '-' !!}</td>
+                     <td>{{ $jawaban->soal->jawaban_benar ?? '-' }}</td>
                     <td>{{ $jawaban->jawaban_dipilih ?? '-' }}</td>
                     <td>{{ $jawaban->nilai_llama3 ?? '0' }}</td>
                     <td>{{ $jawaban->nilai_similarity ?? '0' }}</td>

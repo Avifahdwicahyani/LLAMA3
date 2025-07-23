@@ -12,7 +12,7 @@
                     <li class="nav-label">Admin</li>
 
                     <li>
-                        <a href="{{ route('admin.users.index') }}" aria-expanded="false">
+                        <a href="{{ route('s.index') }}" aria-expanded="false">
                             <i class="icon-people menu-icon"></i> <span class="nav-text">User</span>
                         </a>
                     </li>

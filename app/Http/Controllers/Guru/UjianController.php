@@ -199,6 +199,7 @@ class UjianController extends Controller
 
     public function koreksiUjianSiswa($ujianId)
     {
+        $startTime = microtime(true);
         $siswaIds = JawabanSiswa::with('soal')
             ->whereHas('soal', function ($query) use ($ujianId) {
                 $query->where('ujian_id', $ujianId);
@@ -289,7 +290,8 @@ class UjianController extends Controller
                 $totalNilaiSimilarity += $nilaiSimilarity;
             }
             $presentaseNilai2 = $totalSoal > 0 ? round($totalPercentTextSimilarity / $totalSoal, 2) : 0;
-
+            $endTime = microtime(true);
+            $durasiDetik = round($endTime - $startTime); 
             UjianSiswa::updateOrCreate(
                 [
                     'ujian_id' => $ujianId,
@@ -299,6 +301,7 @@ class UjianController extends Controller
                     'nilai_1' => round($totalNilaiLlama3,2),
                     'nilai_2' => round($totalNilaiSimilarity,2),
                     'presentase_nilai_2' => $presentaseNilai2,
+                    'time_koreksi' => $durasiDetik,
                 ]
             );
         }
@@ -309,6 +312,7 @@ class UjianController extends Controller
   public function koreksiUjianSiswaPersiswa($ujianId, $siswaId)
 {
     try {
+        $startTime = microtime(true);
         $ujianSiswa = UjianSiswa::where([
             'ujian_id' => $ujianId,
             'siswa_id' => $siswaId
@@ -393,11 +397,14 @@ class UjianController extends Controller
 
             $nilaiLlama3 = isset($matches[0]) ? floatval($matches[0]) : 0;
             $nilaiLlama3 = min($nilaiLlama3, $skorPerSoal);
+            $endTime = microtime(true);
+            $durasiDetik = round($endTime - $startTime); 
 
             $jawaban->update([
                     'nilai_llama3' => round($nilaiLlama3, 2),
                     'nilai_similarity' => round($nilaiSimilarity, 2),
-                    'percent_text_similarity' => round($percent_text_similarity, 2)
+                    'percent_text_similarity' => round($percent_text_similarity, 2),
+                    'time_koreksi' => $durasiDetik,
                 ]);
 
             $totalNilaiLlama3 += $nilaiLlama3;
