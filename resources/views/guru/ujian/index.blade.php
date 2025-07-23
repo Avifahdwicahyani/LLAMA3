@@ -31,20 +31,16 @@
                     <td>{{ \Carbon\Carbon::parse($ujian->jadwal)->format('d F Y H:i:s') }}</td>
                     <td>{{ \Carbon\Carbon::parse($ujian->waktu_selesai)->format('d F Y H:i:s') }}</td>
                     @php
-                            $detik = $ujian->time_koreksi ?? 0;
-                            $jam = floor($detik / 3600);
-                            $menit = floor(($detik % 3600) / 60);
+                        $detik = $ujian->time_koreksi ?? 0;
 
-                            if ($jam > 0) {
-                                $durasiFormat = $jam . ' jam' . ($menit > 0 ? " {$menit} menit" : '');
-                            } elseif ($menit > 0) {
-                                $durasiFormat = $menit . ' menit';
-                            } else {
-                                $durasiFormat = 'Kurang dari 1 menit';
-                            }
-                        @endphp
+                        $jam = str_pad(floor($detik / 3600), 2, '0', STR_PAD_LEFT);
+                        $menit = str_pad(floor(($detik % 3600) / 60), 2, '0', STR_PAD_LEFT);
+                        $detikSisa = str_pad($detik % 60, 2, '0', STR_PAD_LEFT);
 
-                        <td>{{ $durasiFormat }}</td>
+                        $durasiFormat = "{$jam}:{$menit}:{$detikSisa}";
+                    @endphp
+
+                    <td>{{ $durasiFormat }}</td>
                     <td>
                         <a href="{{ route('guru.ujian.show', $ujian->id) }}" class="btn btn-sm btn-info">Detail</a>
                         <a href="{{ route('guru.ujian.edit', $ujian->id) }}" class="btn btn-sm btn-warning">Edit</a>

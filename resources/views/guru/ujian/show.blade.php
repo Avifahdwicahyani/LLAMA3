@@ -152,6 +152,9 @@
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @php
+                                        $totalWaktuKoreksi = 0;
+                                    @endphp
                                     @foreach ($hasilujian as $key => $siswas)
                                         <tr>
                                             <td>{{ $key+1 }}</td>
@@ -167,18 +170,14 @@
                                             <td>{{ $siswas->nilai_1 ?? 0 }}</td>
                                             <td>{{ $siswas->nilai_2 ?? 0 }}</td>
                                              <td>{{ $siswas->presentase_nilai_2 ?? 0 }}%</td>
-                                              @php
+                                             @php
                                                 $detik = $siswas->time_koreksi ?? 0;
-                                                $jam = floor($detik / 3600);
-                                                $menit = floor(($detik % 3600) / 60);
+                                                $totalWaktuKoreksi += $detik;
+                                                $jam = str_pad(floor($detik / 3600), 2, '0', STR_PAD_LEFT);
+                                                $menit = str_pad(floor(($detik % 3600) / 60), 2, '0', STR_PAD_LEFT);
+                                                $detikSisa = str_pad($detik % 60, 2, '0', STR_PAD_LEFT);
 
-                                                if ($jam > 0) {
-                                                    $durasiFormat = $jam . ' jam' . ($menit > 0 ? " {$menit} menit" : '');
-                                                } elseif ($menit > 0) {
-                                                    $durasiFormat = $menit . ' menit';
-                                                } else {
-                                                    $durasiFormat = 'Kurang dari 1 menit';
-                                                }
+                                                $durasiFormat = "{$jam}:{$menit}:{$detikSisa}";
                                             @endphp
 
                                             <td>{{ $durasiFormat }}</td>
@@ -187,6 +186,19 @@
                                                 <a href="{{ route('guru.ujian.show.nilaisiswa', [$siswas->siswa?->id, $ujian->id]) }}" class="btn btn-sm btn-info">Detail</a></td>
                                         </tr>
                                     @endforeach
+
+                                    @php
+                                        $jamTotal = str_pad(floor($totalWaktuKoreksi / 3600), 2, '0', STR_PAD_LEFT);
+                                        $menitTotal = str_pad(floor(($totalWaktuKoreksi % 3600) / 60), 2, '0', STR_PAD_LEFT);
+                                        $detikTotal = str_pad($totalWaktuKoreksi % 60, 2, '0', STR_PAD_LEFT);
+                                        $totalFormat = "{$jamTotal}:{$menitTotal}:{$detikTotal}";
+                                    @endphp
+
+                                    <tr>
+                                        <td colspan="7" class="text-end fw-bold">Total Waktu Koreksi</td>
+                                        <td class="fw-bold">{{ $totalFormat }}</td>
+                                        <td></td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
