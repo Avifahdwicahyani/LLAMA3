@@ -6,7 +6,7 @@
           <div class="d-flex justify-content-between">
               <h4 class="card-title">Data User</h4>
              <div>
-                 <a href="{{ route('s.create') }}" class="btn btn-primary mb-3">Tambah User</a>
+                 <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Tambah User</a>
               <button class="btn btn-success mb-3" data-toggle="modal" data-target="#importModal">
                 Import User
               </button>
