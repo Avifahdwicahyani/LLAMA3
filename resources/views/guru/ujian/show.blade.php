@@ -194,11 +194,15 @@
                                         $totalFormat = "{$jamTotal}:{$menitTotal}:{$detikTotal}";
                                     @endphp
 
+                                  
+                                </tbody>
+                                <tfoot>
                                     <tr>
                                         <td colspan="7" class="text-end fw-bold">Total Waktu Koreksi</td>
                                         <td class="fw-bold">{{ $totalFormat }}</td>
+                                        <td></td>
                                     </tr>
-                                </tbody>
+                                </tfoot>
                             </table>
                         </div>
 
