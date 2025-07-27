@@ -137,7 +137,7 @@
 
                 </div>
                   <div class="table-responsive">
-                             <table class="table table-striped table-bordered zero-configuration">
+                             <table id="tabel-nilai" class="table table-striped table-bordered">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -248,5 +248,13 @@ document.getElementById('exportForm').addEventListener('submit', function(e) {
     const params = new URLSearchParams(new FormData(form)).toString();
     window.location.href = "{{ route('guru.ujian.exportHasilUjian', $ujian->id) }}" + '?' + params;
 });
+    $(document).ready(function () {
+        $('#tabel-nilai').DataTable({
+            "ordering": true,
+            "paging": true,
+            "searching": true,
+            "info": true
+        });
+    });
 </script>
 @endsection
