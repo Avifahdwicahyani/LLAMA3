@@ -12,7 +12,13 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Font Awesome -->
-        <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+        <link 
+         rel="stylesheet" 
+         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+         integrity="sha512-papb0rx8auPHzPB6QwVJ+K3cW4sIm5U57wH5bzOgzV+fM/sPBt7Vg++6PQhXkIJtlDZbBp36JK2xbJidXx2xIg==" 
+         crossorigin="anonymous" 
+         referrerpolicy="no-referrer" 
+         />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
