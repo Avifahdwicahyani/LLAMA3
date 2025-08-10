@@ -34,7 +34,7 @@
 
                     <li>
                         <a href="{{ route('guru.siswa.index') }}" aria-expanded="false">
-                            <i class="fas fa-user-graduate"></i> <span class="nav-text">Siswa</span>
+                            <i class="fas fa-book-reader"></i> <span class="nav-text">Siswa</span>
                         </a>
                     </li>
 
